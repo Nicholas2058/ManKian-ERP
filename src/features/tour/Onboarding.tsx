@@ -5,6 +5,7 @@ import { useSession } from '@/store/session';
 import { Modal } from '@/components/ui/overlay';
 import { Button } from '@/components/ui/core';
 import { CirclePlay, ShieldCheck, Tag, UserCog, Warehouse } from '@/components/ui/icons';
+import { BrandLogo } from '@/components/layout/Brand';
 
 const SLIDES = [
   {
@@ -61,6 +62,7 @@ export function OnboardingSpotlight() {
         </>
       }
     >
+      <BrandLogo className="mb-3" />
       <AnimatePresence mode="wait">
         <motion.div key={i} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.2 }} className="flex gap-4 py-2">
           <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-accent-soft text-brand">{s.icon}</div>

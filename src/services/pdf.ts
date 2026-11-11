@@ -8,16 +8,35 @@ import { COMPANY } from '@/data/reference';
 import { fmtDate, fmtDateTime } from '@/lib/dates';
 import { formatRM, lineTotal } from '@/lib/money';
 import { downloadBlob } from '@/lib/utils';
+import { BRAND_LOGO } from '@/lib/brand';
 
 type Doc = import('jspdf').jsPDF;
 
 async function libs() {
-  const [{ jsPDF }, at] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
+  const [{ jsPDF }, at] = await Promise.all([import('jspdf'), import('jspdf-autotable'), loadLogo()]);
   return { jsPDF, autoTable: at.autoTable };
 }
 
-const FOREST: [number, number, number] = [16, 63, 52];
-const JADE: [number, number, number] = [41, 180, 127];
+const FOREST: [number, number, number] = [18, 57, 26];
+const GREEN: [number, number, number] = [16, 124, 8]; // logo green #107c08
+const ORANGE: [number, number, number] = [243, 146, 0]; // logo orange #f39200
+
+/** Official logo as a data URL for jsPDF (fetched once; documents fall back to a text header if it fails). */
+let LOGO: string | null = null;
+async function loadLogo() {
+  if (LOGO) return;
+  try {
+    const blob = await (await fetch(BRAND_LOGO)).blob();
+    LOGO = await new Promise<string>((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(String(r.result));
+      r.onerror = rej;
+      r.readAsDataURL(blob);
+    });
+  } catch {
+    LOGO = null;
+  }
+}
 
 function watermark(doc: Doc) {
   const pages = doc.getNumberOfPages();
@@ -25,7 +44,7 @@ function watermark(doc: Doc) {
     doc.setPage(i);
     const g = (doc as unknown as { GState: new (o: { opacity: number }) => unknown }).GState;
     if (g) (doc as unknown as { setGState: (s: unknown) => void }).setGState(new g({ opacity: 0.09 }));
-    doc.setTextColor(16, 63, 52);
+    doc.setTextColor(...GREEN);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(64);
     doc.text('DEMO SAMPLE', 105, 165, { angle: 35, align: 'center' });
@@ -39,20 +58,27 @@ function watermark(doc: Doc) {
 }
 
 function header(doc: Doc, title: string, number: string, meta: [string, string][]) {
-  doc.setFillColor(...FOREST);
-  doc.rect(0, 0, 210, 30, 'F');
-  doc.setFillColor(...JADE);
-  doc.roundedRect(14, 8, 14, 14, 3, 3, 'F');
-  doc.setTextColor(255);
+  // Letterhead: official logo left, company particulars right, logo-coloured rules below.
+  if (LOGO) doc.addImage(LOGO, 'PNG', 14, 7, 60, 14);
+  else {
+    doc.setTextColor(...GREEN);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text(COMPANY.legalName, 14, 15);
+  }
+  doc.setTextColor(70);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('MK', 21, 17, { align: 'center' });
-  doc.setFontSize(12);
-  doc.text(COMPANY.legalName, 32, 13);
+  doc.setFontSize(8.5);
+  doc.text(COMPANY.legalName, 196, 10, { align: 'right' });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
-  doc.text(`Reg. ${COMPANY.registration}  ·  ${COMPANY.address}`, 32, 18.5);
-  doc.text(`${COMPANY.website}  ·  Logo placeholder — replace with authorised logo`, 32, 23);
+  doc.text(`Reg. ${COMPANY.registration}`, 196, 14.2, { align: 'right' });
+  doc.text(doc.splitTextToSize(COMPANY.address, 92), 196, 18.2, { align: 'right' });
+  doc.text(COMPANY.website, 196, 25.6, { align: 'right' });
+  doc.setFillColor(...GREEN);
+  doc.rect(0, 28.5, 210, 1.4, 'F');
+  doc.setFillColor(...ORANGE);
+  doc.rect(0, 29.9, 210, 0.6, 'F');
   doc.setTextColor(...FOREST);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
@@ -95,7 +121,7 @@ export type PdfMode = 'download' | { open: Window | null };
 /** Open a blank tab synchronously (inside the click handler) so popup blockers allow the preview. */
 export function previewWindow(): PdfMode {
   const w = window.open('', '_blank');
-  if (w) w.document.write('<p style="font-family:sans-serif;padding:24px;color:#103F34">Generating DEMO SAMPLE PDF…</p>');
+  if (w) w.document.write('<p style="font-family:sans-serif;padding:24px;color:#12391a">Generating DEMO SAMPLE PDF…</p>');
   return { open: w };
 }
 

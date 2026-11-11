@@ -28,7 +28,7 @@ export function Topbar() {
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setDrawer(true)} aria-label="Open navigation">
           <MenuIcon className="size-5" />
         </Button>
-        <button onClick={() => nav('/')} className="rounded-xl bg-forest-900 px-2 py-1 lg:hidden" aria-label="Home">
+        <button onClick={() => nav('/')} className="rounded-xl lg:hidden" aria-label="Home">
           <BrandMark collapsed />
         </button>
         <button

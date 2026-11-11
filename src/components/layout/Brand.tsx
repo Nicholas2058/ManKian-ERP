@@ -1,21 +1,13 @@
 import { cn } from '@/lib/utils';
+import { BRAND_LOGO, BRAND_MARK } from '@/lib/brand';
 
-/**
- * Temporary "MK Hardware / DEMO" wordmark. To use the official logo (only with the
- * client's permission), place it at public/brand/logo.svg and set VITE_BRAND_LOGO=/brand/logo.svg.
- */
+/** Sidebar / top-bar brand: the MK mark on a white tile (keeps the logo's true colours on any background). */
 export function BrandMark({ collapsed, className }: { collapsed?: boolean; className?: string }) {
-  const logo = import.meta.env.VITE_BRAND_LOGO as string | undefined;
   return (
     <div className={cn('flex items-center gap-2.5', className)}>
-      {logo ? (
-        <img src={logo} alt="MK Hardware" className="h-9 w-auto object-contain" />
-      ) : (
-        <div className="relative grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-jade-500 to-forest-700 font-display text-[15px] font-extrabold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.25)]">
-          MK
-          <span className="absolute -bottom-1 -right-1 size-3 rounded-full border-2 border-forest-900 bg-ember-500" aria-hidden />
-        </div>
-      )}
+      <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-white p-1 shadow-sm ring-1 ring-black/5">
+        <img src={BRAND_MARK} alt="MK Hardware" width={259} height={211} className="h-auto w-full" draggable={false} />
+      </div>
       {!collapsed && (
         <div className="min-w-0 leading-tight">
           <div className="font-display text-[15px] font-extrabold tracking-tight text-white">MK Hardware</div>
@@ -24,6 +16,15 @@ export function BrandMark({ collapsed, className }: { collapsed?: boolean; class
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Full horizontal logo (dark wordmark) — placed on a white plate so it reads in dark mode too. */
+export function BrandLogo({ className }: { className?: string }) {
+  return (
+    <div className={cn('inline-flex rounded-xl bg-white px-3 py-2 ring-1 ring-black/5', className)}>
+      <img src={BRAND_LOGO} alt="Man Kian Hardware & Trading Sdn Bhd" width={600} height={140} className="h-9 w-auto" draggable={false} />
     </div>
   );
 }

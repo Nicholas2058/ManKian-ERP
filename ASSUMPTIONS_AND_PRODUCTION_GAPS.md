@@ -73,7 +73,7 @@ From the official website (www.mkhardware.com.my), read during the build:
 9. Own fleet, third-party lorries, or both? How are proof of delivery and self-pickup recorded today?
 10. What are your credit terms, approval limits, deposit rules and payment methods? What is your SST and e-Invoice position and timeline?
 11. How should the website integrate with NEWPAGES? Can NEWPAGES provide exports or API access?
-12. May we use the official MK Hardware logo and product photos in the demo and the final system?
+12. ~~May we use the official MK Hardware logo in the demo?~~ Confirmed for the demo (logo in use). Still open: product photos, and logo use in the final system.
 
 ## 5. Suggested path to production
 

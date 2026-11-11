@@ -85,7 +85,7 @@ function useThemeEffect() {
     const apply = () => {
       const dark = theme === 'dark' || (theme === 'system' && mq.matches);
       document.documentElement.classList.toggle('dark', dark);
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0f1e1a' : '#103F34');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0f1d10' : '#12391a');
     };
     apply();
     mq.addEventListener('change', apply);
