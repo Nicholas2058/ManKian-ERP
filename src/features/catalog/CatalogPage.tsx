@@ -206,7 +206,7 @@ function CardsGrid({ families, customerView, onOpen }: { families: Product[][]; 
             return (
               <motion.div key={key} layout initial={ok ? { opacity: 0, y: 10 } : false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: ok ? Math.min(i, 12) * 0.02 : 0 }} whileHover={{ y: -3 }} className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-lift)]">
                 <button onClick={() => onOpen(p.id)} className="relative aspect-[16/10] w-full overflow-hidden" aria-label={`Open ${p.sku}`}>
-                  <ProductArt art={p.art} className="transition-transform duration-300 group-hover:scale-[1.04]" label={`${p.name} illustration`} />
+                  <ProductArt art={p.art} sku={p.sku} className="transition-transform duration-300 group-hover:scale-[1.04]" label={p.name} />
                   <span className="absolute left-2 top-2 rounded-md bg-surface/90 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-ink-2 shadow-sm">{p.sku}</span>
                   {p.status !== 'active' && <Badge tone="neutral" className="absolute right-2 top-2">Discontinued</Badge>}
                   {p.watch && <Star className="absolute right-2 top-2 size-4 fill-current text-warn" />}
@@ -262,7 +262,7 @@ function CatalogTable({ rows, onOpen, customerView }: { rows: Product[]; onOpen:
   const stock = stockIndex(db);
   const columns = React.useMemo<ColumnDef<Product, unknown>[]>(
     () => [
-      { id: 'img', header: '', enableSorting: false, cell: (c) => <div className="h-8 w-11 overflow-hidden rounded-md border border-line"><ProductArt art={c.row.original.art} /></div> },
+      { id: 'img', header: '', enableSorting: false, cell: (c) => <div className="h-8 w-11 overflow-hidden rounded-md border border-line"><ProductArt art={c.row.original.art} sku={c.row.original.sku} /></div> },
       { id: 'sku', header: 'SKU', accessorKey: 'sku', cell: (c) => <span className="whitespace-nowrap font-mono text-xs font-semibold">{c.row.original.sku}</span> },
       { id: 'name', header: 'Product', accessorFn: (p) => `${p.name} ${p.variantLabel ?? ''}`, cell: (c) => <span className="line-clamp-1 max-w-[280px]">{c.getValue() as string}</span> },
       { id: 'brand', header: 'Brand', accessorFn: (p) => db.brands[p.brandId]?.name ?? '' },
@@ -293,7 +293,7 @@ function ProductDetail({ p, customerView, onSelect }: { p: Product; customerView
   return (
     <div className="space-y-5">
       <div className="aspect-[16/9] overflow-hidden rounded-2xl border border-line">
-        <ProductArt art={p.art} />
+        <ProductArt art={p.art} sku={p.sku} />
       </div>
       <div className="flex flex-wrap gap-1.5">
         <Badge tone={p.status === 'active' ? 'green' : 'neutral'}>{p.status}</Badge>

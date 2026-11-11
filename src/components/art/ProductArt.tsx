@@ -1,9 +1,11 @@
 import type { ArtKey } from '@/domain/types';
+import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { photoFor } from '@/data/productPhotos';
 
 /**
- * Original, lightweight product-type illustrations (no scraped or hotlinked photos).
- * Replace with licensed product photography when the client provides it.
+ * Product imagery: a product photo from the client's own website when one is mapped to the SKU
+ * (see src/data/productPhotos.ts), otherwise an original lightweight product-type illustration.
  */
 const S = { stroke: 'var(--art-ink)', strokeWidth: 3, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const };
 const F = 'var(--art-fill)';
@@ -377,7 +379,16 @@ function Shape({ k }: { k: ArtKey }) {
   }
 }
 
-export function ProductArt({ art, className, label }: { art: ArtKey; className?: string; label?: string }) {
+export function ProductArt({ art, sku, className, label }: { art: ArtKey; sku?: string; className?: string; label?: string }) {
+  const photo = sku ? photoFor(sku) : undefined;
+  const [failed, setFailed] = React.useState(false);
+  if (photo && !failed) {
+    return (
+      <span className={cn('block h-full w-full bg-white', className)}>
+        <img src={photo} alt={label ?? ''} loading="lazy" decoding="async" draggable={false} onError={() => setFailed(true)} className="block h-full w-full object-contain p-[6%]" />
+      </span>
+    );
+  }
   return (
     <svg viewBox="0 0 120 90" className={cn('block h-full w-full', className)} role="img" aria-label={label ?? `${art} illustration`}>
       <defs>

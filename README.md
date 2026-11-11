@@ -83,7 +83,7 @@ src/
 tests/            Vitest unit tests (pricing, operations, finance, parser, seed integrity)
 e2e/              Playwright critical flows
 integrations/     d1-prototype (schema + example Pages Function, NOT deployed)
-public/           brand/ (official logo files), favicons, _headers (noindex + security headers), robots.txt
+public/           brand/ (official logo files), products/ (client product photos), favicons, _headers (noindex + security headers), robots.txt
 ```
 
 **Stack:** React 19 · TypeScript (strict) · Vite 6 · React Router 7 · Tailwind CSS 4 · Radix primitives · Lucide · Motion · Recharts · TanStack Table 8 · Zustand · Dexie · Immer · Zod · React Hook Form · date-fns / Intl (MYR, Asia/Kuala_Lumpur) · Three.js + React Three Fiber + Drei · jsPDF + autotable · PapaParse · cmdk · Sonner.
@@ -124,4 +124,4 @@ See **[ASSUMPTIONS_AND_PRODUCTION_GAPS.md](ASSUMPTIONS_AND_PRODUCTION_GAPS.md)**
 
 ## Branding
 
-The official Man Kian Hardware logo is used with the client's permission (`public/brand/mk-logo.png`, `mk-mark.png`; favicon and touch icon are derived from the mark) in the sidebar, welcome dialog and PDF letterheads, and the UI palette is matched to the logo's green (#107c08) and orange (#f39200). Product images are original SVG illustrations; replace them with licensed photography when available. The public company name, registration number and address shown on sample documents come from the official website.
+The official Man Kian Hardware logo is used with the client's permission (`public/brand/mk-logo.png`, `mk-mark.png`; favicon and touch icon are derived from the mark) in the sidebar, welcome dialog and PDF letterheads, and the UI palette is matched to the logo's green (#107c08) and orange (#f39200). Product photos come from the client's own website (www.mkhardware.com.my, used with permission): 35 photos in `public/products/` mapped to 50 demo SKUs in `src/data/productPhotos.ts` (each entry notes the source product id). A photo shows the product *type* — sizes/variants of one family share a photo — and brand-specific SKUs only use a photo of the same brand. SKUs without a good match (and any product added in the demo) fall back to original SVG illustrations. The public company name, registration number and address shown on sample documents come from the official website.

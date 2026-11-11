@@ -228,7 +228,7 @@ function LineAdder({ q }: { q: Quote }) {
             <div className="rounded-xl border border-accent/30 bg-accent-soft/40 p-3">
               <div className="flex items-start gap-3">
                 <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg border border-line">
-                  <ProductArt art={p.art} />
+                  <ProductArt art={p.art} sku={p.sku} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-mono text-[11px] text-muted">{p.sku}</p>
@@ -333,7 +333,7 @@ function LineRow({ q, l, idx, editable, now }: { q: Quote; l: QuoteLine; idx: nu
       <div className="flex items-start gap-3">
         <span className="tabular mt-1 w-5 text-xs text-muted">{idx + 1}</span>
         <div className="hidden h-10 w-14 shrink-0 overflow-hidden rounded-lg border border-line sm:block">
-          <ProductArt art={p.art} />
+          <ProductArt art={p.art} sku={p.sku} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">

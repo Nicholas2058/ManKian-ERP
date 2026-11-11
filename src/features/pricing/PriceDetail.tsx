@@ -43,7 +43,7 @@ export function PriceDetail({ product: p, onClose }: { product: Product; onClose
     <div className="space-y-5" data-tour="pricing-detail">
       <div className="flex items-start gap-3">
         <div className="h-16 w-20 shrink-0 overflow-hidden rounded-xl border border-line">
-          <ProductArt art={p.art} />
+          <ProductArt art={p.art} sku={p.sku} />
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-mono text-xs font-semibold text-muted">{p.sku}</p>

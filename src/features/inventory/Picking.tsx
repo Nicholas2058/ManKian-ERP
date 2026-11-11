@@ -148,7 +148,7 @@ function PickRun({ pl, onBack }: { pl: Picklist; onBack: () => void }) {
             <motion.div key={t.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={cn('rounded-2xl border p-4 transition-colors', t.status === 'picked' ? 'border-accent/40 bg-accent-soft/40' : t.status === 'short' ? 'border-warn/50 bg-warn-soft/40' : 'border-line bg-surface', flash === t.id && 'flash')}>
               <div className="flex items-start gap-3">
                 <div className="h-14 w-16 shrink-0 overflow-hidden rounded-xl border border-line">
-                  <ProductArt art={p.art} />
+                  <ProductArt art={p.art} sku={p.sku} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-1.5 font-display text-xl font-extrabold text-brand">

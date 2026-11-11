@@ -209,7 +209,7 @@ function StockDetail({ r }: { r: Row }) {
     <div className="space-y-5" data-tour="product-stock">
       <div className="flex gap-3">
         <div className="h-20 w-28 shrink-0 overflow-hidden rounded-xl border border-line">
-          <ProductArt art={r.p.art} />
+          <ProductArt art={r.p.art} sku={r.p.sku} />
         </div>
         <div className="grid flex-1 grid-cols-3 gap-2 text-center">
           {[
@@ -421,7 +421,7 @@ function ScanResult({ p, onOpen }: { p: Product; onOpen: (id: string) => void })
   return (
     <div>
       <div className="h-28 overflow-hidden rounded-xl border border-line">
-        <ProductArt art={p.art} />
+        <ProductArt art={p.art} sku={p.sku} />
       </div>
       <p className="mt-3 font-mono text-xs text-muted">{p.sku}</p>
       <p className="font-semibold">

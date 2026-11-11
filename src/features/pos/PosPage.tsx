@@ -109,7 +109,7 @@ export default function PosPage() {
               {quick.map((p) => (
                 <button key={p.id} onClick={() => add(p)} className="overflow-hidden rounded-xl border border-line bg-surface text-left transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md">
                   <div className="aspect-[4/3]">
-                    <ProductArt art={p.art} />
+                    <ProductArt art={p.art} sku={p.sku} />
                   </div>
                   <div className="p-1.5">
                     <p className="line-clamp-1 text-[11px] font-medium">{p.variantLabel ?? p.name}</p>

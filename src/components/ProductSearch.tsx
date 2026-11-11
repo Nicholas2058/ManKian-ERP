@@ -113,7 +113,7 @@ export function ProductSearch({
                 className={cn('flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2', i === hi && 'bg-surface-3')}
               >
                 <div className="h-9 w-12 shrink-0 overflow-hidden rounded-md border border-line">
-                  <ProductArt art={p.art} />
+                  <ProductArt art={p.art} sku={p.sku} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ink">
