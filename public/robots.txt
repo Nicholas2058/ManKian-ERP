@@ -1,0 +1,3 @@
+# Demo environment with fictional data — not for search engines.
+User-agent: *
+Disallow: /
