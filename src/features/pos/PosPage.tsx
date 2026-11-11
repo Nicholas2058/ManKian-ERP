@@ -18,6 +18,7 @@ import { Modal, Segmented } from '@/components/ui/overlay';
 import { PageHeader, Gate, DemoNote } from '@/components/widgets';
 import { ProductSearch } from '@/components/ProductSearch';
 import { ProductArt } from '@/components/art/ProductArt';
+import { photoFor } from '@/data/productPhotos';
 import { Minus, Plus, Pause, Play, Printer, ShoppingCart, Trash, FileText, Check, AlertTriangle, Hourglass, Banknote } from '@/components/ui/icons';
 
 export default function PosPage() {
@@ -43,10 +44,14 @@ export default function PosPage() {
   const stock = stockIndex(db);
   const quick = React.useMemo(
     () =>
-      Object.values(db.products)
-        .filter((p) => p.status === 'active' && ['saf', 'hnd', 'plb', 'chm', 'elc'].includes(p.categoryId) && p.basePrice < 3000)
-        .sort((a, b) => (a.abc + a.sku).localeCompare(b.abc + b.sku))
-        .slice(0, 12),
+      {
+        const counter = Object.values(db.products)
+          .filter((p) => p.status === 'active' && ['saf', 'hnd', 'plb', 'chm', 'elc'].includes(p.categoryId) && p.basePrice < 3000)
+          .sort((a, b) => (a.abc + a.sku).localeCompare(b.abc + b.sku));
+        // quick tiles show products with a real photo (fallback: all counter items if too few have one)
+        const withPhoto = counter.filter((p) => photoFor(p.sku));
+        return (withPhoto.length >= 8 ? withPhoto : counter).slice(0, 12);
+      },
     [db.products],
   );
   const add = (p: Product) => {

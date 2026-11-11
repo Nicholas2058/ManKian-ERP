@@ -24,6 +24,7 @@ import { Drawer, Modal, Segmented, Toggle, useConfirm } from '@/components/ui/ov
 import { PageHeader, Gate, KV, DemoNote, useMotionOK } from '@/components/widgets';
 import { DataTable } from '@/components/data-table/DataTable';
 import { ProductArt } from '@/components/art/ProductArt';
+import { photoFor } from '@/data/productPhotos';
 import { searchProducts } from '@/components/ProductSearch';
 import { Archive, ClipboardList, Copy, Download, FileText, FileUp, LayoutGrid, LayoutList, Package, Pencil, Plus, Search, ShoppingCart, Star, Trash, Eye, Store, RotateCcw } from '@/components/ui/icons';
 import { ProductFormModal } from './ProductForm';
@@ -40,19 +41,23 @@ export default function CatalogPage() {
   const [uom, setUom] = React.useState('');
   const [vendor, setVendor] = React.useState('');
   const [showArchived, setShowArchived] = React.useState(false);
+  // Products with a real photo from the client's website are listed first; the switch can hide the rest.
+  const [photosOnly, setPhotosOnly] = React.useState(false);
   const [customerView, setCustomerView] = React.useState(false);
   const [add, setAdd] = React.useState(false);
   const [imp, setImp] = React.useState(false);
   const [boqOpen, setBoqOpen] = React.useState(false);
   const boq = useBoq((s) => s.lines);
   const stock = stockIndex(db);
-  const all = React.useMemo(() => Object.values(db.products).sort((a, b) => a.sku.localeCompare(b.sku)), [db.products]);
+  const all = React.useMemo(() => Object.values(db.products).sort((a, b) => Number(!!photoFor(b.sku)) - Number(!!photoFor(a.sku)) || a.sku.localeCompare(b.sku)), [db.products]);
   const filtered = React.useMemo(() => {
     const base = q.trim() ? searchProducts(all.filter((p) => showArchived || p.status === 'active'), q, db.brands, 500) : all;
     return base.filter((p) => {
       const s = stock[p.id];
       if (!showArchived && p.status !== 'active') return false;
       if (cat && p.categoryId !== cat) return false;
+      // products added during the demo stay listed even without a photo
+      if (photosOnly && !photoFor(p.sku) && p.createdAt < db.config.seededAt) return false;
       if (brand && p.brandId !== brand) return false;
       if (vol && p.volatility !== vol) return false;
       if (uom && p.baseUom !== uom) return false;
@@ -62,7 +67,7 @@ export default function CatalogPage() {
       if (stockF === 'out' && (s?.available ?? 0) > 0) return false;
       return true;
     });
-  }, [all, q, cat, brand, vol, uom, vendor, stockF, showArchived, stock, db.brands, db.supplierProducts]);
+  }, [all, q, cat, brand, vol, uom, vendor, stockF, showArchived, photosOnly, stock, db.brands, db.supplierProducts, db.config.seededAt]);
   // group families into one card with variant chips
   const families = React.useMemo(() => {
     const seen = new Map<string, Product[]>();
@@ -85,7 +90,7 @@ export default function CatalogPage() {
     <div>
       <PageHeader
         title="Master Product Catalog"
-        subtitle={`${all.filter((p) => p.status === 'active').length} active SKUs across ${Object.keys(db.categories).length} categories. Specs are illustrative — verify against manufacturer datasheets.`}
+        subtitle={`${all.filter((p) => p.status === 'active' && photoFor(p.sku)).length} products with photos listed first · ${all.filter((p) => p.status === 'active').length} active SKUs across ${Object.keys(db.categories).length} categories. Specs are illustrative — verify against manufacturer datasheets.`}
         actions={
           <>
             <Button variant="outline" onClick={() => setBoqOpen(true)} className="relative">
@@ -162,6 +167,7 @@ export default function CatalogPage() {
             <option value="medium">Medium</option>
             <option value="low">Low</option>
           </Select>
+          <Toggle checked={photosOnly} onCheckedChange={setPhotosOnly} label="Photos only" />
           <Toggle checked={showArchived} onCheckedChange={setShowArchived} label="Discontinued" />
         </div>
       </Card>
@@ -171,7 +177,7 @@ export default function CatalogPage() {
         </DemoNote>
       )}
       {filtered.length === 0 ? (
-        <EmptyState icon={<Package className="size-6" />} title="No products match" body="Clear a filter or try a different search." />
+        <EmptyState icon={<Package className="size-6" />} title="No products match" body={photosOnly ? 'Only products with photos are listed — switch off "Photos only" to search every SKU.' : 'Clear a filter or try a different search.'} />
       ) : view === 'cards' ? (
         <CardsGrid families={families} customerView={customerView} onOpen={setId} />
       ) : (
@@ -200,7 +206,7 @@ function CardsGrid({ families, customerView, onOpen }: { families: Product[][]; 
         <AnimatePresence initial={false}>
           {families.slice(0, limit).map((fam, i) => {
             const key = fam[0].familyId ?? fam[0].id;
-            const p = fam.find((x) => x.id === pickedVariant[key]) ?? fam[0];
+            const p = fam.find((x) => x.id === pickedVariant[key]) ?? fam.find((x) => photoFor(x.sku)) ?? fam[0];
             const s = stock[p.id];
             const low = (s?.available ?? 0) + (s?.incoming ?? 0) < p.reorderPoint;
             return (
