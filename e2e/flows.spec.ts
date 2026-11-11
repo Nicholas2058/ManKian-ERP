@@ -21,8 +21,9 @@ test.afterEach(() => {
   expect(errors, `console errors: ${errors.join('\n')}`).toEqual([]);
 });
 
-test('boots to the dashboard with onboarding and live KPIs', async ({ page }) => {
+test('boots to the dashboard with onboarding and live KPIs (light theme by default)', async ({ page }) => {
   await page.goto('/');
+  await expect.poll(() => page.evaluate(() => document.documentElement.classList.contains('dark'))).toBe(false);
   await expect(page.getByRole('dialog', { name: /Welcome to the MK Hardware ERP demo/ })).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Explore on my own' }).click();
   await expect(page.getByRole('heading', { name: 'Mission Control' })).toBeVisible();
@@ -47,13 +48,16 @@ test('daily cost shock → manager approval → new list price; sales exec canno
   await expect(page.getByText('Issued snapshot retained').first()).toBeVisible();
   await page.getByRole('button', { name: /Apply as supplier cost update/ }).click();
   await expect(page.getByText(/cost update\(s\) recorded/).first()).toBeVisible();
-  // switch to Sales Executive: approval must be blocked
+  // Sales Executive: no Approvals module — lands on their workspace, and the inbox shows an access screen
   await page.goto('/approvals');
   await page.getByRole('button', { name: /Demo role/ }).click();
   await page.getByRole('menuitem', { name: /Sales Executive/ }).click();
+  await expect(page.getByRole('heading', { name: /Good (morning|afternoon|evening), Kevin/ })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: /Approvals/ })).toHaveCount(0);
+  await page.goto('/approvals');
+  await expect(page.getByRole('heading', { name: /Not part of the Sales Executive role/ })).toBeVisible();
+  await page.getByRole('button', { name: /Switch to Sales Manager/ }).click();
   const card = page.locator('div.rounded-2xl', { hasText: 'ANG-5050 price' }).first();
-  await expect(card.getByRole('button', { name: /Switch to Sales Manager/ })).toBeVisible();
-  await card.getByRole('button', { name: /Switch to Sales Manager/ }).click();
   const finalPrice = await card.getByLabel('Final price').inputValue();
   await card.getByRole('button', { name: 'Approve' }).click();
   await expect(page.getByText(/approved/).first()).toBeVisible();
@@ -147,4 +151,47 @@ test('3D warehouse renders a WebGL canvas and the bin panel agrees with inventor
   await page.getByRole('radio', { name: 'Low stock' }).click();
   await page.getByRole('button', { name: /^A01/ }).click();
   await expect(page.getByText(/Available \(all bins\)|Empty bin/).first()).toBeVisible();
+});
+
+test('each role gets its own menu and home screen', async ({ page }) => {
+  await skipOnboarding(page, 'picker');
+  await ready(page, '/');
+  await expect(page.getByRole('heading', { name: /Jason/ })).toBeVisible();
+  const menu = page.getByRole('navigation', { name: 'Main' });
+  await expect(menu.getByRole('link', { name: /Inventory/ })).toBeVisible();
+  await expect(menu.getByRole('link', { name: /Pricing Command/ })).toHaveCount(0);
+  await expect(menu.getByRole('link', { name: /Receivables/ })).toHaveCount(0);
+  await page.getByRole('button', { name: /Demo role/ }).click();
+  await page.getByRole('menuitem', { name: /Counter Cashier/ }).click();
+  await expect(page.getByRole('heading', { name: /Nur/ })).toBeVisible();
+  await expect(menu.getByRole('link', { name: /Counter POS/ })).toBeVisible();
+  await expect(menu.getByRole('link', { name: /Inventory/ })).toHaveCount(0);
+});
+
+test('guided scenario spotlights the step target and greys out the rest', async ({ page }) => {
+  await skipOnboarding(page);
+  await ready(page, '/tour');
+  await page.getByRole('button', { name: 'Start' }).first().click();
+  await expect(page).toHaveURL(/\/pricing\?sku=/);
+  const spot = page.getByTestId('tour-spotlight');
+  await expect(spot).toBeVisible();
+  // The cut-out settles around the target (it follows scrolling with a short transition)
+  await expect
+    .poll(async () => {
+      const t = await page.locator('[data-tour="pricing-detail"]').boundingBox();
+      const h = await spot.boundingBox();
+      return !!t && !!h && h.x <= t.x && h.y <= Math.max(4, t.y) && h.x + h.width >= Math.min(t.x + t.width, 1280 - 4) - 1;
+    })
+    .toBe(true);
+  // Clicks outside the highlighted area are blocked (sidebar link does nothing)
+  await page.mouse.click(40, 300);
+  await expect(page).toHaveURL(/\/pricing\?sku=/);
+  // The tour panel itself stays usable above the dimmer
+  await page.getByRole('dialog', { name: /Guided scenario A/ }).getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(page).toHaveURL(/tab=shock/);
+  await expect(page.getByTestId('tour-spotlight')).toBeVisible();
+  // Esc minimises the tour and lifts the dimmer
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('tour-spotlight')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Scenario A · step 2/ })).toBeVisible();
 });

@@ -85,6 +85,30 @@ export function Sparkline({ values, className, height = 28, width = 96, stroke =
   );
 }
 
+function useElementWidth<T extends HTMLElement>() {
+  const ref = React.useRef<T>(null);
+  const [w, setW] = React.useState(0);
+  React.useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    setW(Math.floor(el.getBoundingClientRect().width));
+    const ro = new ResizeObserver(([e]) => setW(Math.floor(e.contentRect.width)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, w] as const;
+}
+
+/** Sparkline that takes only the space left in its row (never overflows the tile). */
+function FluidSparkline({ values }: { values: number[] }) {
+  const [ref, w] = useElementWidth<HTMLDivElement>();
+  return (
+    <div ref={ref} className="ml-auto hidden h-[30px] min-w-0 max-w-[96px] flex-1 justify-end sm:flex" aria-hidden={w < 40}>
+      {w >= 40 && <Sparkline values={values} width={w} height={30} />}
+    </div>
+  );
+}
+
 export function KpiTile({
   label,
   value,
@@ -129,9 +153,9 @@ export function KpiTile({
           </Tip>
         )}
       </p>
-      <div className="mt-2 flex items-end justify-between gap-2">
-        <AnimatedNumber value={value} format={format} className={cn('whitespace-nowrap font-display text-xl font-bold text-ink sm:text-[26px]', tone === 'warn' && 'text-warn', tone === 'danger' && 'text-danger')} />
-        {trend && trend.length > 1 && <Sparkline values={trend} width={84} height={30} className="hidden shrink-0 sm:block" />}
+      <div className="mt-2 flex items-end gap-2">
+        <AnimatedNumber value={value} format={format} className={cn('shrink-0 whitespace-nowrap font-display text-xl font-bold text-ink sm:text-[26px]', tone === 'warn' && 'text-warn', tone === 'danger' && 'text-danger')} />
+        {trend && trend.length > 1 && <FluidSparkline values={trend} />}
       </div>
       {(sub || delta !== undefined) && (
         <div className="mt-1 flex items-center justify-between gap-2 text-xs text-muted">

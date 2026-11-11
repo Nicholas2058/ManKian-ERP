@@ -110,7 +110,7 @@ function Requisitions({ onNew }: { onNew: () => void }) {
   };
   const r = sel ? db.requisitions[sel] : undefined;
   return (
-    <div className="grid gap-4 xl:grid-cols-12">
+    <div className="grid gap-4 xl:grid-cols-12" data-tour="requisitions">
       <div className="space-y-4 xl:col-span-4">
         <SectionCard title="Reorder suggestions" subtitle="Available + incoming below reorder point" actions={<Badge tone="amber">{suggestions.length}</Badge>}>
           {suggestions.length === 0 ? (

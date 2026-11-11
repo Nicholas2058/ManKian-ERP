@@ -64,7 +64,7 @@ export default function DeliveryPage() {
       {driver ? (
         <DriverView onOpen={setId} />
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-5" data-tour="delivery-page">
           {staged.length > 0 && (
             <Card className="flex flex-wrap items-center gap-3 border-brand/30 bg-accent-soft/40 p-4">
               <PackageCheck className="size-5 text-brand" />

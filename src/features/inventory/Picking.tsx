@@ -112,7 +112,7 @@ function PickRun({ pl, onBack }: { pl: Picklist; onBack: () => void }) {
     setScan('');
   };
   return (
-    <div className="mx-auto max-w-2xl space-y-3">
+    <div className="mx-auto max-w-2xl space-y-3" data-tour="picking">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" onClick={onBack}>
           <ArrowLeft className="size-4" /> Picklists

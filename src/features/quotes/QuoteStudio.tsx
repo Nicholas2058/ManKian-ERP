@@ -179,7 +179,7 @@ function Studio({ id }: { id: string }) {
         )}
         {(lg || mobileTab === 'summary') && (
           <div className="space-y-4 lg:col-span-5">
-            <div className="space-y-4 lg:sticky lg:top-20">
+            <div className="space-y-4 lg:sticky lg:top-20" data-tour="quote-summary">
               <Summary q={q} vNo={vNo} editable={editable} now={now} />
             </div>
           </div>

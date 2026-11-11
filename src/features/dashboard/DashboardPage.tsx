@@ -20,6 +20,9 @@ import {
   Zap, Wallet, TrendingUp, Percent, ShoppingCart, Building2, Truck, AlertTriangle, ArrowRight, Clock, Boxes, PackageOpen, Receipt, Warehouse, Activity, Hourglass, Sparkles, FileText,
 } from '@/components/ui/icons';
 import { startScenario } from '@/features/tour/TourOverlay';
+import { useSession } from '@/store/session';
+import { ROLES } from '@/domain/roles';
+import { workspaceFor } from '@/features/workspace/queues';
 
 const RANGES: { value: RangeKey; label: string }[] = [
   { value: 'today', label: 'Today' },
@@ -66,7 +69,9 @@ export default function DashboardPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 2xl:grid-cols-7" data-tour="kpis">
+      <RoleQueue now={now} />
+
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 min-[112.5rem]:grid-cols-7" data-tour="kpis">
         <KpiTile label={t('dash.netSales')} value={k.netSales} format={fmtCompact} delta={pctChange(kp.netSales, k.netSales)} trend={spark} sub={`${k.invoiceCount} invoices`} definition="Sum of invoice subtotals (excl. tax & freight) issued in the period, including counter sales." onClick={() => nav('/analytics')} icon={<TrendingUp className="size-3.5" />} />
         <KpiTile label={t('dash.pipeline')} value={k.pipelineValue} format={fmtCompact} sub={`${k.pipelineCount} open orders`} definition="Value of sales-order lines not yet invoiced (excluding cancelled)." onClick={() => nav('/orders')} icon={<ShoppingCart className="size-3.5" />} />
         <KpiTile label={t('dash.margin')} value={k.grossMarginPct} format={fmtPct1} delta={k.grossMarginPct - kp.grossMarginPct} sub={`COGS ${compactRM(k.cogs)}`} definition="(Net sales − cost of goods sold) ÷ net sales × 100. Cost uses the snapshot on each order line." onClick={() => nav('/analytics')} icon={<Percent className="size-3.5" />} />
@@ -140,6 +145,31 @@ export default function DashboardPage() {
         <Timeline now={now} />
       </div>
     </div>
+  );
+}
+
+/** Personal queue for Sales Manager / Finance on top of the shared dashboard. */
+function RoleQueue({ now }: { now: string }) {
+  const db = useDbState();
+  const nav = useNavigate();
+  const role = useSession((s) => s.role);
+  if (role === 'owner') return null;
+  const ws = workspaceFor(role, db, now);
+  if (!ws.stats.length) return null;
+  return (
+    <Card className="flex flex-wrap items-center gap-3 border-brand/30 bg-accent-soft/40 p-3 sm:p-4">
+      <p className="text-sm font-semibold">
+        Your queue · <span className="text-brand">{ROLES[role].label}</span>
+      </p>
+      <div className="flex flex-1 flex-wrap gap-2">
+        {ws.stats.map((st) => (
+          <button key={st.key} onClick={() => nav(st.link)} className={cn('inline-flex items-center gap-2 rounded-xl border bg-surface px-3 py-1.5 text-sm hover:border-brand', st.tone === 'danger' ? 'border-danger/40' : st.tone === 'warn' ? 'border-warn/50' : 'border-line')}>
+            <b className="tabular">{st.display ?? st.value}</b> {st.label}
+            <ArrowRight className="size-3.5 text-muted" />
+          </button>
+        ))}
+      </div>
+    </Card>
   );
 }
 

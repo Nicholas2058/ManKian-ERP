@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider, Link } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { useDbStore, bootDb, resetDemo } from '@/store/db';
 import { useSession } from '@/store/session';
+import { DASHBOARD_ROLES } from '@/domain/roles';
 import { AppShell } from '@/components/layout/AppShell';
 import { ConfirmProvider, TipProvider } from '@/components/ui/overlay';
 import { Button } from '@/components/ui/core';
@@ -28,6 +29,13 @@ const Analytics = lazy(() => import('@/features/analytics/AnalyticsPage'));
 const Approvals = lazy(() => import('@/features/approvals/ApprovalsPage'));
 const Settings = lazy(() => import('@/features/settings/SettingsPage'));
 const Tour = lazy(() => import('@/features/tour/TourPage'));
+const Workspace = lazy(() => import('@/features/workspace/WorkspacePage'));
+
+/** Owner / managers land on the management dashboard; operational roles on their workspace. */
+function Home() {
+  const role = useSession((s) => s.role);
+  return DASHBOARD_ROLES.includes(role) ? <Dashboard /> : <Workspace />;
+}
 
 function NotFound() {
   return (
@@ -46,7 +54,7 @@ const router = createBrowserRouter([
   {
     element: <AppShell />,
     children: [
-      { path: '/', element: <Dashboard /> },
+      { path: '/', element: <Home /> },
       { path: '/pricing', element: <Pricing /> },
       { path: '/catalog', element: <Catalog /> },
       { path: '/enquiries', element: <Enquiries /> },

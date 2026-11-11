@@ -145,7 +145,7 @@ export default function WarehousePage() {
         <AlertTriangle className="size-4 text-warn" /> Illustrative warehouse layout — not an actual survey of any MK Hardware facility.
         {!webgl && <Badge tone="amber">WebGL unavailable — 2D plan shown</Badge>}
       </div>
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]" data-tour="warehouse-view">
         <Card className="relative overflow-hidden">
           <div className="flex flex-wrap items-center gap-2 border-b border-line p-3">
             <Segmented

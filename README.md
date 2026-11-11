@@ -43,7 +43,7 @@ On first load the app generates **90 days of fictional history** in the browser 
 | **Analytics & insights** | Revenue, weekly margin % (with floor), category share, cost-shock pass-through, margin change by category, product drill-down, inventory turnover proxy, supplier on-time score, quote conversion trend, ageing; KPI/quote CSV and PDF summary; **deterministic Operations Insights** with the rule shown on each; controlled "play demo event" feed |
 | **Approvals, settings, audit, tour** | Unified approval inbox routed by role; preferences (theme, density, language, motion, low-power 3D, notifications); configurable business rules, SST configuration, UOMs; role permission matrix; integration status and optional FX reference (Frankfurter, never auto-applied); reset / export / import snapshots; full audit log; first-run onboarding and **six guided, stateful scenarios** with restart |
 
-Cross-cutting: Ctrl/⌘+K command palette, quick "+ New" menu, notifications, role switcher, dark mode, Bahasa Melayu / 简体中文 subset with English fallback, reduced-motion support, toasts with Undo for safe actions, confirmation dialogs for destructive actions, responsive drawers and bottom sheets.
+Cross-cutting: Ctrl/⌘+K command palette, quick "+ New" menu, notifications, role switcher (each role gets its own menu, home screen — Mission Control for Owner / Sales Manager / Finance, a task workspace for everyone else — and permitted actions; see *Settings → Roles*), light theme by default with optional dark mode, Bahasa Melayu / 简体中文 subset with English fallback, reduced-motion support, toasts with Undo for safe actions, confirmation dialogs for destructive actions, responsive drawers and bottom sheets.
 
 ---
 
@@ -94,7 +94,7 @@ public/           favicon, _headers (noindex + security headers), robots.txt
 
 ## Demo scenarios
 
-Open **Demo Tour** (sidebar, bottom tab on mobile or the ▷ icon). Each scenario has 4–5 steps, highlights the right control, ticks steps off when the records change, and can be restarted on clean data.
+Open **Demo Tour** (sidebar, bottom tab on mobile or the ▷ icon). Each scenario has 4–5 steps, spotlights the area to look at or click (the rest of the screen is greyed out and blocked; Esc or the – button lets you explore freely), ticks steps off when the records change, and can be restarted on clean data.
 
 | | Scenario | What it proves |
 |---|---|---|

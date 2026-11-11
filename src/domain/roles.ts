@@ -55,6 +55,60 @@ export const ROLES: Record<RoleKey, RoleDef> = {
 
 export const ROLE_ORDER: RoleKey[] = ['owner', 'sales_manager', 'sales_exec', 'procurement', 'wh_supervisor', 'picker', 'dispatcher', 'finance', 'cashier'];
 
+/** Roles whose home screen is the management dashboard; everyone else lands on "My workspace". */
+export const DASHBOARD_ROLES: RoleKey[] = ['owner', 'sales_manager', 'finance'];
+
+/**
+ * Which modules each demo role works in (navigation + screen access).
+ * Visual simulation only — production needs server-side authorisation.
+ */
+const MODULE_ACCESS: [string, RoleKey[] | 'all'][] = [
+  ['/approvals', ['owner', 'sales_manager', 'finance']],
+  ['/enquiries', ['owner', 'sales_manager', 'sales_exec']],
+  ['/quotes', ['owner', 'sales_manager', 'sales_exec']],
+  ['/orders', ['owner', 'sales_manager', 'sales_exec', 'wh_supervisor', 'dispatcher', 'finance']],
+  ['/customers', ['owner', 'sales_manager', 'sales_exec', 'finance', 'cashier']],
+  ['/pos', ['owner', 'sales_manager', 'sales_exec', 'cashier']],
+  ['/pricing', ['owner', 'sales_manager', 'procurement']],
+  ['/catalog', ['owner', 'sales_manager', 'sales_exec', 'procurement', 'wh_supervisor', 'cashier']],
+  ['/procurement', ['owner', 'procurement', 'wh_supervisor']],
+  ['/inventory', ['owner', 'sales_manager', 'sales_exec', 'procurement', 'wh_supervisor', 'picker']],
+  ['/warehouse', ['owner', 'sales_manager', 'sales_exec', 'procurement', 'wh_supervisor', 'picker']],
+  ['/delivery', ['owner', 'sales_manager', 'wh_supervisor', 'dispatcher']],
+  ['/finance', ['owner', 'finance']],
+  ['/analytics', ['owner', 'sales_manager', 'procurement', 'finance']],
+  ['/settings', 'all'],
+  ['/tour', 'all'],
+];
+
+function moduleFor(path: string) {
+  const p = path.split('?')[0];
+  return MODULE_ACCESS.find(([m]) => p === m || p.startsWith(`${m}/`));
+}
+
+export function canAccess(role: RoleKey, path: string): boolean {
+  const m = moduleFor(path);
+  return !m || m[1] === 'all' || m[1].includes(role);
+}
+
+/** Roles that work in the module behind a path (for "switch role" suggestions). */
+export function rolesForPath(path: string): RoleKey[] {
+  const m = moduleFor(path);
+  return !m || m[1] === 'all' ? ROLE_ORDER : m[1];
+}
+
+export const ROLE_TONE: Record<RoleKey, string> = {
+  owner: 'from-jade-500 to-forest-700',
+  sales_manager: 'from-sky-500 to-blue-700',
+  sales_exec: 'from-cyan-500 to-teal-700',
+  procurement: 'from-violet-500 to-indigo-700',
+  wh_supervisor: 'from-amber-500 to-orange-700',
+  picker: 'from-orange-400 to-amber-600',
+  dispatcher: 'from-rose-500 to-red-700',
+  finance: 'from-emerald-500 to-green-800',
+  cashier: 'from-fuchsia-500 to-purple-700',
+};
+
 export function can(role: RoleKey, perm: Permission): boolean {
   const p = ROLES[role].perms;
   return p === 'all' || p.includes(perm);

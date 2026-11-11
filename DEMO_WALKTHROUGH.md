@@ -28,7 +28,7 @@ Say early: *"Everything you see is fictional — customers, suppliers and prices
 3. **Cost shock** tab: the slider is preset to **+14%**. The cards animate to the new cost, suggested price and margin, and the SKU turns red: *below 12% floor*.
 4. **Impact on open quotations**: one draft falls below the floor, one draft is **contract-locked** (price honoured), and one **issued** quote keeps its snapshot ("price unchanged").
 5. Click **Apply as supplier cost update**. Say: *"Procurement records the supplier's new cost; the selling price doesn't change until a manager approves."*
-6. Top-right role switcher → **Sales Executive**. Open **Approvals** and show that the Approve button is locked.
+6. Top-right role switcher → **Sales Executive**. The menu shrinks to the sales modules and the home screen becomes *My workspace*; **Approvals** is gone, and opening `/approvals` directly shows "Not part of the Sales Executive role".
 7. Switch to **Sales Manager**. Adjust the final price if you like, then **Approve**.
 8. Open the flagged draft quote (Quotations → *Recheck* filter). It shows "Price updated — reprice available". The issued quote is unchanged. Mention the price-history entry, the audit log, and that the dashboard alert has resolved.
 

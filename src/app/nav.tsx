@@ -3,6 +3,8 @@ import {
   LayoutDashboard, ClipboardCheck, CirclePlay, Inbox, FileText, ShoppingCart, Users, Store, Tag, Package, Truck, Warehouse, Boxes, Building2, Wallet, ChartColumn, Settings,
 } from '@/components/ui/icons';
 import type { DbState } from '@/domain/state';
+import type { RoleKey } from '@/domain/types';
+import { canAccess, DASHBOARD_ROLES } from '@/domain/roles';
 import { stockIndex } from '@/domain/inventory';
 
 export interface NavItem {
@@ -71,9 +73,31 @@ export const NAV: NavGroup[] = [
   { key: 'nav.system', items: [{ key: 'nav.settings', path: '/settings', icon: Settings }] },
 ];
 
-export const MOBILE_TABS: { key: TKey; path: string; icon: NavItem['icon'] }[] = [
-  { key: 'nav.dashboard', path: '/', icon: LayoutDashboard },
-  { key: 'nav.quotes', path: '/quotes', icon: FileText },
-  { key: 'nav.pricing', path: '/pricing', icon: Tag },
-  { key: 'nav.inventory', path: '/inventory', icon: Boxes },
-];
+/** Label for the home item: owner/managers see the dashboard, other roles their workspace. */
+export function homeKey(role: RoleKey): TKey {
+  return DASHBOARD_ROLES.includes(role) ? 'nav.dashboard' : 'nav.workspace';
+}
+
+/** Navigation filtered to the modules the demo role works in. */
+export function navFor(role: RoleKey): NavGroup[] {
+  return NAV.map((g) => ({ ...g, items: g.items.filter((it) => canAccess(role, it.path)).map((it) => (it.path === '/' ? { ...it, key: homeKey(role) } : it)) })).filter((g) => g.items.length > 0);
+}
+
+const MOBILE_PRIORITY: Record<RoleKey, string[]> = {
+  owner: ['/', '/quotes', '/pricing', '/inventory'],
+  sales_manager: ['/', '/approvals', '/quotes', '/pricing'],
+  sales_exec: ['/', '/enquiries', '/quotes', '/catalog'],
+  procurement: ['/', '/procurement', '/pricing', '/inventory'],
+  wh_supervisor: ['/', '/inventory', '/warehouse', '/procurement'],
+  picker: ['/', '/inventory', '/warehouse'],
+  dispatcher: ['/', '/delivery', '/orders'],
+  finance: ['/', '/finance', '/approvals', '/customers'],
+  cashier: ['/', '/pos', '/catalog', '/customers'],
+};
+
+export function mobileTabsFor(role: RoleKey): { key: TKey; path: string; icon: NavItem['icon'] }[] {
+  const all = navFor(role).flatMap((g) => g.items);
+  return MOBILE_PRIORITY[role].map((p) => all.find((it) => it.path === p)).filter(Boolean).map((it) => ({ key: it!.key, path: it!.path, icon: it!.icon }));
+}
+
+export const MOBILE_TABS = mobileTabsFor('owner');

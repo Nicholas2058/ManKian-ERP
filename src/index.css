@@ -251,4 +251,3 @@ html.motion-reduce *::after {
 @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(41 180 127 / 0.55); } 100% { box-shadow: 0 0 0 14px rgb(41 180 127 / 0); } }
 @keyframes flash-bg { 0% { background-color: var(--accent-soft); } 100% { background-color: transparent; } }
 .flash { animation: flash-bg 1.6s ease-out; }
-.tour-highlight { position: relative; z-index: 45; box-shadow: 0 0 0 3px var(--accent), 0 0 0 9px rgb(41 180 127 / 0.25) !important; border-radius: 14px; animation: pulse-ring 1.6s ease-out 2; }

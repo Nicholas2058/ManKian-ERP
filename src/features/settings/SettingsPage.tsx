@@ -6,7 +6,9 @@ import { useDbState, useDbStore, resetDemo, exportSnapshot, importSnapshot, getD
 import { useSession, type Lang } from '@/store/session';
 import { act } from '@/lib/act';
 import { updateConfig, setFxRates } from '@/domain/commands/system';
-import { ROLES, ROLE_ORDER, PERM_LABEL, can, type Permission } from '@/domain/roles';
+import { ROLES, ROLE_ORDER, PERM_LABEL, can, canAccess, DASHBOARD_ROLES, type Permission } from '@/domain/roles';
+import { NAV } from '@/app/nav';
+import { useT } from '@/i18n';
 import { UOM_LABELS } from '@/domain/uom';
 import { LANG_LABEL } from '@/i18n';
 import { useParam } from '@/lib/hooks';
@@ -226,8 +228,49 @@ function Uom() {
 function Roles() {
   const role = useSession((s) => s.role);
   const set = useSession((s) => s.set);
+  const t = useT();
   const perms = Object.keys(PERM_LABEL) as Permission[];
+  const modules = NAV.flatMap((g) => g.items).filter((m) => m.path !== '/');
   return (
+    <div className="space-y-4">
+    <SectionCard title="Module access by role" subtitle="Each role gets its own menu and home screen">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[900px] text-xs">
+          <thead>
+            <tr className="border-b border-line">
+              <th className="py-2 text-left text-muted">Module</th>
+              {ROLE_ORDER.map((r) => (
+                <th key={r} className="px-1 py-2">
+                  <button onClick={() => set({ role: r })} className={`rounded-lg px-2 py-1 font-semibold ${role === r ? 'bg-brand text-white dark:text-forest-950' : 'hover:bg-surface-3'}`}>
+                    {ROLES[r].label.split(' ')[0]}
+                  </button>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-line/50">
+              <td className="py-1.5 text-ink-2">Home screen</td>
+              {ROLE_ORDER.map((r) => (
+                <td key={r} className="text-center text-[10px] text-muted">
+                  {DASHBOARD_ROLES.includes(r) ? 'Dashboard' : 'Workspace'}
+                </td>
+              ))}
+            </tr>
+            {modules.map((m) => (
+              <tr key={m.path} className="border-b border-line/50">
+                <td className="py-1.5 text-ink-2">{t(m.key)}</td>
+                {ROLE_ORDER.map((r) => (
+                  <td key={r} className="text-center">
+                    {canAccess(r, m.path) ? <Check className="mx-auto size-4 text-brand" /> : <X className="mx-auto size-3.5 text-line-strong" />}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </SectionCard>
     <SectionCard title="Role simulator" subtitle="Visual demonstration of permissions — NOT real security">
       <div className="mb-4 flex items-start gap-2 rounded-xl bg-danger-soft/50 p-3 text-sm">
         <Lock className="mt-0.5 size-4 shrink-0 text-danger" />
@@ -262,6 +305,7 @@ function Roles() {
         </table>
       </div>
     </SectionCard>
+    </div>
   );
 }
 

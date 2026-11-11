@@ -31,7 +31,7 @@ interface SessionState {
 export const useSession = create<SessionState>()(
   persist(
     (set) => ({
-      theme: 'system',
+      theme: 'light',
       density: 'comfortable',
       lang: 'en',
       role: 'owner',
@@ -46,8 +46,14 @@ export const useSession = create<SessionState>()(
     }),
     {
       name: 'mk-erp-prefs',
-      version: 1,
+      version: 2,
       partialize: ({ set: _s, ...rest }) => rest,
+      // v2: light is the default theme — move earlier "system" defaults to light (users can still pick dark).
+      migrate: (persisted, version) => {
+        const st = (persisted ?? {}) as Partial<SessionState>;
+        if (version < 2 && (!st.theme || st.theme === 'system')) st.theme = 'light';
+        return st as SessionState;
+      },
     },
   ),
 );

@@ -4,7 +4,7 @@ import { Dialog as D } from 'radix-ui';
 import { useNavigate } from 'react-router-dom';
 import { useDbState } from '@/store/db';
 import { useSession } from '@/store/session';
-import { NAV } from '@/app/nav';
+import { navFor } from '@/app/nav';
 import { useT } from '@/i18n';
 import { ROLES, ROLE_ORDER } from '@/domain/roles';
 import { formatRM } from '@/lib/money';
@@ -20,6 +20,7 @@ export function CommandPalette() {
   const t = useT();
   const set = useSession((s) => s.set);
   const theme = useSession((s) => s.theme);
+  const role = useSession((s) => s.role);
   paletteBus.open = () => setOpen(true);
 
   React.useEffect(() => {
@@ -98,7 +99,7 @@ export function CommandPalette() {
                 ))}
               </Command.Group>
               <Command.Group heading="Navigate" className={group}>
-                {NAV.flatMap((g) => g.items).map((it) => (
+                {navFor(role).flatMap((g) => g.items).map((it) => (
                   <Command.Item key={it.path} value={`go ${t(it.key)} ${it.path}`} className={item} onSelect={() => go(it.path)}>
                     <it.icon className="size-4 text-muted" /> {t(it.key)}
                   </Command.Item>

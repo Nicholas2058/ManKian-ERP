@@ -211,11 +211,11 @@ export default function AnalyticsPage() {
             <KpiTile label="Fill rate %" value={fillRate} format={fmtPct1} definition="Order lines that did not need a backorder (first shipment complete)." />
             <KpiTile label="Overdue debt" value={k.overdueReceivables} format={fmtCompact} definition="Invoice balances past due date." tone={k.overdueReceivables ? 'warn' : 'default'} />
           </div>
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-2" data-tour="margin-trend">
             <SectionCard title="Revenue trend" subtitle="Net sales per period">
               <TrendArea data={series} x="label" y="sales" name="Net sales" format={(v) => formatRM(v, { decimals: false })} axisFormat={(v) => compactRM(v).replace('RM ', '')} height={220} />
             </SectionCard>
-            <SectionCard title={<span data-tour="margin-trend">Gross margin % by week {cat ? `· ${db.categories[cat]?.name}` : '· all categories'}</span>} subtitle="Click a category below to filter" actions={cat ? <Button size="xs" variant="ghost" onClick={() => setCat(null)}>Clear filter</Button> : undefined}>
+            <SectionCard title={<span>Gross margin % by week {cat ? `· ${db.categories[cat]?.name}` : '· all categories'}</span>} subtitle="Click a category below to filter" actions={cat ? <Button size="xs" variant="ghost" onClick={() => setCat(null)}>Clear filter</Button> : undefined}>
               <TrendLine data={marginWeekly} x="label" y="margin" name="Gross margin %" format={(v) => `${v.toFixed(1)}%`} refY={db.config.minMarginPct} refLabel="floor" height={220} />
             </SectionCard>
           </div>

@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { toast } from 'sonner';
 import { useSession } from '@/store/session';
 import { useDbState, resetDemo } from '@/store/db';
 import { ROLES } from '@/domain/roles';
 import { cn } from '@/lib/utils';
+import { useMotionOK } from '@/components/widgets';
 import { Button } from '@/components/ui/core';
 import { useConfirm } from '@/components/ui/overlay';
 import { Check, ChevronLeft, ChevronRight, CircleCheck, Minus, RotateCcw, UserCog, X, CirclePlay, ArrowRight } from '@/components/ui/icons';
@@ -18,28 +20,80 @@ export function startScenario(key: string, nav: (p: string) => void, db: Paramet
   nav(s.steps[0].route(db));
 }
 
-/** Highlight the step's target element (retries while the route renders). */
-function useHighlight(target: string | undefined, key: string) {
+/**
+ * Spotlight: dims and blocks everything except the step's target (like the welcome tour).
+ * The cut-out follows the target while it scrolls/resizes. Dialogs, menus and toasts opened
+ * from the target sit above the dimmer, so the guided action stays fully usable.
+ */
+function Spotlight({ targets, stepKey, smooth }: { targets: string[]; stepKey: string; smooth: boolean }) {
+  const [rect, setRect] = React.useState<{ x: number; y: number; w: number; h: number; minY: number; maxY: number } | null>(null);
+  const [nudge, setNudge] = React.useState(0);
   React.useEffect(() => {
-    if (!target) return;
-    let el: Element | null = null;
-    let tries = 0;
-    const iv = window.setInterval(() => {
-      el = document.querySelector(`[data-tour="${target}"]`);
-      tries++;
-      if (el || tries > 25) {
-        window.clearInterval(iv);
-        if (el) {
-          el.classList.add('tour-highlight');
-          el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }
+    let raf = 0;
+    let last = '';
+    let scrolled = false;
+    const find = () => {
+      for (const t of targets) {
+        const el = document.querySelector(`[data-tour="${t}"]`);
+        if (el && el.getClientRects().length) return el;
       }
-    }, 120);
-    return () => {
-      window.clearInterval(iv);
-      document.querySelectorAll('.tour-highlight').forEach((x) => x.classList.remove('tour-highlight'));
+      return null;
     };
-  }, [target, key]);
+    const tick = () => {
+      const el = find();
+      if (el) {
+        if (!scrolled) {
+          scrolled = true;
+          const r0 = el.getBoundingClientRect();
+          if (r0.top < 72 || r0.bottom > window.innerHeight - 24) el.scrollIntoView({ block: r0.height > window.innerHeight * 0.7 ? 'start' : 'center', behavior: smooth ? 'smooth' : 'auto' });
+        }
+        const r = el.getBoundingClientRect();
+        // Keep the cut-out inside the visible content area (between the sticky top bar and the
+        // mobile tab bar) so shell chrome stays dimmed and blocked when a tall target scrolls under it.
+        const inLayer = !!el.closest('[role="dialog"]'); // sheets/dialogs sit above the shell chrome
+        const top = inLayer ? null : document.querySelector('[data-shell="topbar"]');
+        const bottom = inLayer ? null : document.querySelector('[data-shell="bottom-nav"]');
+        const minY = top && !top.contains(el) ? top.getBoundingClientRect().bottom : 0;
+        const bRect = bottom?.getClientRects().length ? bottom.getBoundingClientRect() : null;
+        const maxY = bRect && !bottom!.contains(el) ? bRect.top : window.innerHeight;
+        const key = `${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)},${Math.round(r.height)},${Math.round(minY)},${Math.round(maxY)}`;
+        if (key !== last) {
+          last = key;
+          setRect({ x: r.left, y: r.top, w: r.width, h: r.height, minY, maxY });
+        }
+      } else if (last) {
+        last = '';
+        setRect(null);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => cancelAnimationFrame(raf);
+  }, [targets.join(','), stepKey, smooth]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!rect) return null;
+  const pad = 8;
+  const x = Math.max(4, rect.x - pad);
+  const y = Math.max(rect.minY + 4, rect.y - pad);
+  const w = Math.min(window.innerWidth - 4, rect.x + rect.w + pad) - x;
+  const h = Math.min(rect.maxY - 4, rect.y + rect.h + pad) - y;
+  const hole = { left: x, top: y, width: Math.max(0, w), height: Math.max(0, h) };
+  const block = (style: React.CSSProperties) => <div className="fixed z-[44] cursor-not-allowed" style={style} onClick={() => setNudge((n) => n + 1)} />;
+  return createPortal(
+    <div className="no-print">
+      <div
+        aria-hidden
+        data-testid="tour-spotlight"
+        className={cn('pointer-events-none fixed z-[44] rounded-2xl', smooth && 'transition-[left,top,width,height] duration-200')}
+        style={{ ...hole, boxShadow: '0 0 0 9999px rgba(6, 24, 19, 0.62)', outline: '3px solid var(--color-jade-400)' }}
+      />
+      {nudge > 0 && <div key={nudge} aria-hidden className="pointer-events-none fixed z-[44] animate-[pulse-ring_0.8s_ease-out_2] rounded-2xl" style={hole} />}
+      {block({ left: 0, top: 0, right: 0, height: Math.max(0, y) })}
+      {block({ left: 0, top: y + h, right: 0, bottom: 0 })}
+      {block({ left: 0, top: y, width: Math.max(0, x), height: Math.max(0, h) })}
+      {block({ left: x + w, top: y, right: 0, height: Math.max(0, h) })}
+    </div>,
+    document.body,
+  );
 }
 
 export function TourOverlay() {
@@ -55,7 +109,15 @@ export function TourOverlay() {
   const startedAt = tour.startedAt ?? new Date(0).toISOString();
   const done = step?.done ? step.done(db, startedAt) : false;
   const onRoute = step ? loc.pathname + loc.search === step.route(db) || loc.pathname === step.route(db).split('?')[0] : false;
-  useHighlight(onRoute ? step?.target : undefined, `${tour.scenario}-${tour.step}-${loc.key}`);
+  const ok = useMotionOK();
+  React.useEffect(() => {
+    if (!s || tour.minimized) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !document.querySelector('[role="dialog"][data-state="open"]')) set({ tour: { ...tour, minimized: true } });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [s, tour, set]);
 
   const prevDone = React.useRef(done);
   React.useEffect(() => {
@@ -81,6 +143,8 @@ export function TourOverlay() {
   const last = tour.step === s.steps.length - 1;
 
   return (
+    <>
+    {!tour.minimized && onRoute && step.target && <Spotlight targets={step.target.split(',')} stepKey={`${tour.scenario}-${tour.step}`} smooth={ok} />}
     <AnimatePresence>
       {tour.minimized ? (
         <motion.button
@@ -123,6 +187,7 @@ export function TourOverlay() {
             </div>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-white/80">{step.body}</p>
+          {onRoute && step.target && <p className="mt-1.5 text-[11px] text-white/50">Only the highlighted area is active · Esc or – to explore freely</p>}
           {step.role && role !== step.role && (
             <button onClick={() => set({ role: step.role! })} className="mt-3 flex w-full items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-left text-xs font-medium hover:bg-white/15">
               <UserCog className="size-4 text-jade-400" /> Suggested role: {ROLES[step.role].label} — click to switch
@@ -174,5 +239,6 @@ export function TourOverlay() {
         </motion.div>
       )}
     </AnimatePresence>
+    </>
   );
 }

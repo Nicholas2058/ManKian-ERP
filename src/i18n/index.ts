@@ -8,6 +8,7 @@ import { useSession, type Lang } from '@/store/session';
 const en = {
   'nav.overview': 'Overview',
   'nav.dashboard': 'Mission Control',
+  'nav.workspace': 'My workspace',
   'nav.approvals': 'Approvals',
   'nav.tour': 'Demo Tour',
   'nav.sell': 'Sell',
@@ -67,6 +68,7 @@ type Dict = Partial<Record<Key, string>>;
 const ms: Dict = {
   'nav.overview': 'Gambaran',
   'nav.dashboard': 'Pusat Kawalan',
+  'nav.workspace': 'Ruang kerja saya',
   'nav.approvals': 'Kelulusan',
   'nav.tour': 'Lawatan Demo',
   'nav.sell': 'Jualan',
@@ -123,6 +125,7 @@ const ms: Dict = {
 const zh: Dict = {
   'nav.overview': '概览',
   'nav.dashboard': '指挥中心',
+  'nav.workspace': '我的工作台',
   'nav.approvals': '审批',
   'nav.tour': '演示导览',
   'nav.sell': '销售',

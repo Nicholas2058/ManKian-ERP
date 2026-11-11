@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { useT, LANG_LABEL } from '@/i18n';
 import { useSession, type Lang, type Theme } from '@/store/session';
 import { run, useDbState } from '@/store/db';
-import { ROLES, ROLE_ORDER } from '@/domain/roles';
+import { ROLES, ROLE_ORDER, ROLE_TONE, DASHBOARD_ROLES } from '@/domain/roles';
 import { fmtLongDay, relTime } from '@/lib/dates';
 import { markNotificationsRead } from '@/domain/commands/system';
 import { Button, Kbd } from '@/components/ui/core';
@@ -23,7 +23,7 @@ export function Topbar() {
   const nav = useNavigate();
   const [drawer, setDrawer] = React.useState(false);
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur-md">
+    <header data-shell="topbar" className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur-md">
       <div className="flex h-16 items-center gap-2 px-3 sm:px-5 lg:px-8">
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setDrawer(true)} aria-label="Open navigation">
           <MenuIcon className="size-5" />
@@ -211,7 +211,7 @@ export function RoleSwitcher() {
       className="w-[min(92vw,320px)]"
       trigger={
         <button className="flex h-10 items-center gap-2 rounded-xl border border-line bg-surface pl-1.5 pr-2 text-left shadow-sm hover:border-line-strong" aria-label={`Demo role: ${r.label}`} data-tour="role-switcher">
-          <span className="grid size-7 place-items-center rounded-lg bg-gradient-to-br from-jade-500 to-forest-700 text-[11px] font-bold text-white">
+          <span className={cn('grid size-7 place-items-center rounded-lg bg-gradient-to-br text-[11px] font-bold text-white', ROLE_TONE[role])}>
             {r.persona.split(' ').map((p) => p[0]).join('')}
           </span>
           <span className="hidden min-w-0 leading-tight md:block">
@@ -223,12 +223,12 @@ export function RoleSwitcher() {
       }
     >
       <div className="mx-1 mb-1 rounded-lg bg-warn-soft px-2.5 py-2 text-[11px] leading-snug text-ink-2">
-        <b>Role simulation only.</b> Switching roles changes visible controls to illustrate permissions. It is not authentication and is not secure.
+        <b>Role simulation only.</b> Each role gets its own menu, home screen and permitted actions. It is not authentication and is not secure.
       </div>
       {ROLE_ORDER.map((k) => (
         <MenuItem
           key={k}
-          icon={<UserCog className="size-4" />}
+          icon={<span className={cn('block size-4 rounded bg-gradient-to-br', ROLE_TONE[k])} />}
           onSelect={() => {
             set({ role: k });
             toast.info(`Demo role: ${ROLES[k].label} (${ROLES[k].persona})`);
@@ -239,6 +239,7 @@ export function RoleSwitcher() {
           <span className="block text-[11px] text-muted">
             {ROLES[k].persona} · {ROLES[k].focus}
           </span>
+          <span className="block text-[10px] text-muted/80">Home: {DASHBOARD_ROLES.includes(k) ? 'Mission Control dashboard' : 'My workspace'}</span>
         </MenuItem>
       ))}
     </Menu>

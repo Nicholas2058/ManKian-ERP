@@ -2,7 +2,8 @@ import { NavLink } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { NAV } from '@/app/nav';
+import { navFor } from '@/app/nav';
+import { ROLES } from '@/domain/roles';
 import { useT } from '@/i18n';
 import { useSession } from '@/store/session';
 import { useDbState } from '@/store/db';
@@ -13,14 +14,22 @@ import { PanelLeftClose, PanelLeftOpen } from '@/components/ui/icons';
 export function NavList({ collapsed, onNavigate }: { collapsed?: boolean; onNavigate?: () => void }) {
   const t = useT();
   const db = useDbState();
+  const role = useSession((s) => s.role);
+  const groups = useMemo(() => navFor(role), [role]);
   const badges = useMemo(() => {
     const out: Record<string, number> = {};
-    for (const g of NAV) for (const it of g.items) if (it.badge) out[it.path] = it.badge(db);
+    for (const g of groups) for (const it of g.items) if (it.badge) out[it.path] = it.badge(db);
     return out;
-  }, [db]);
+  }, [db, groups]);
   return (
     <nav className="space-y-5" aria-label="Main">
-      {NAV.map((g) => (
+      {!collapsed && (
+        <div className="rounded-xl bg-white/5 px-3 py-2 text-[11px] leading-snug text-white/60 ring-1 ring-white/10">
+          Viewing as <b className="text-white">{ROLES[role].label}</b>
+          <span className="block text-white/40">Menu shows this role's modules</span>
+        </div>
+      )}
+      {groups.map((g) => (
         <div key={g.key}>
           {!collapsed && <div className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/40">{t(g.key)}</div>}
           <ul className="space-y-0.5">
